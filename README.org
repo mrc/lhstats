@@ -1,0 +1,105 @@
+* About
+Statistical functions in Common Lisp.
+Version 1.01
+July 27, 2001
+
+- Sourced from: http://nostoc.stanford.edu/jeff/cllib/utils.lisp
+- CLiki: http://www.cliki.net/Stats
+
+Documentation from lhstats.lisp:
+
+This comes in large part from Larry Hunter but has been significantly
+augmented by Jeff Shrager, partly from his own stats libraries, and 
+partly from open source stuff borrowed from around the web.  Citations
+and acknowledgements are given where possible.
+
+* Larry Hunter's Code
+
+Statistical functions in Common Lisp.  Version 1.01 July 27, 2001
+
+This code is copyright (c) 2000 by Larry Hunter (Larry.Hunter@uchsc.edu)
+except where otherwise noted.
+
+Thanks to Paul Cohen for the original CLASP package.  Thanks also to bug
+reports from Rob St. Amant.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+The formulas and methods used are largely taken from Bernard Rosner,
+"Fundamentals of Biostatistics," 5th edition.  "Rosner x" is a page
+number.  Some numeric functions were taken from CLASP, a 1994 common
+lisp package that implemented some of the statistical functions from
+"Numeric recipes in C" For CLASP functions, see copyright notice below.
+
+These abreviations used in function and variable names:
+| ci  | confidence interval          |
+| cdf | cumulative density function  |
+| ge  | greater than or equal to     |
+| le  | less than or equal to        |
+| pdf | probability density function |
+| sd  | standard deviation           |
+| rxc | rows by columns              |
+| sse | sample size estimate         |
+
+* Functions provided
+
+** Descriptive statistics
+  Mean, median, mode, geometric mean, range, percentile, variance,
+  standard-deviation (sd), coefficient-of-variation,
+  standard-error-of-the-mean
+
+** Distributional functions
+*** Poisson & Binomial
+   binomial-probability, binomial-cumulative-probability,
+   binomial-ge-probability, poisson-probability,
+   poisson-cumulative-probability, poisson-ge-probability, Normal
+   normal-pdf, convert-to-standard-normal, phi, z, t-distribution,
+   chi-square, chi-square-cdf
+
+** Confidence Intervals
+  binomial-probability-ci, poisson-mu-ci, normal-mean-ci,
+  normal-mean-ci-on-sequences, normal-variance-ci,
+  normal-variance-ci-on-sequence, normal-sd-ci
+
+** Hypothesis tests (parametric)
+  z-test, z-test-on-sequence, t-test-one-sample,
+  t-test-one-sample-on-sequence, t-test-paired,
+  t-test-paired-on-sequences, t-test-two-sample,
+  t-test-two-sample-on-sequences, chi-square-test-one-sample, f-test,
+  binomial-test-one-sample, binomial-test-two-sample, fisher-exact-test,
+  mcnemars-test, poisson-test-one-sample
+
+** Hypothesis tests (non-parametric)
+  sign-test, sign-test-on-sequence, wilcoxon-signed-rank-test,
+  chi-square-test-rxc, chi-square-test-for-trend
+
+** Sample size estimates
+  t-test-one-sample-sse, t-test-two-sample-sse
+  t-test-paired-sse, binomial-test-one-sample-sse,
+  binomial-test-two-sample-sse,
+  binomial-test-paired-sse, correlation-sse
+
+** Correlation and Regression
+  linear-regression, correlation-coefficient,
+  correlation-test-two-sample, spearman-rank-correlation
+
+** Significance test functions
+  t-significance, f-significance (chi square significance is calculated
+  from chi-square-cdf in various ways depending on the problem).
+
+** Utilities
+  random-sample, random-pick, bin-and-count, fishers-z-transform,
+  mean-sd-n, square, choose, permutations, round-float
+
