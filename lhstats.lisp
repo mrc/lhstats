@@ -155,7 +155,7 @@
                        (t `(typep ,name ',type))))
                (message `(error
                           ,(if (eql type :test)
-                               name
+                               "~a"
                                (format nil "~a = ~~a is not a ~a" name
                                        (case type
                                          ((:positive-integer :posint)
