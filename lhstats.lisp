@@ -1,7 +1,7 @@
 ;;;; lhstats.lisp
 
 ;;; This comes in large part from Larry Hunter but has been significantly
-;;; augmented by Jeff Shrager, partly from his own stats libraries, and 
+;;; augmented by Jeff Shrager, partly from his own stats libraries, and
 ;;; partly from open source stuff borrowed from around the web.  Citations
 ;;; and acknowledgements are given where possible.
 
@@ -138,16 +138,16 @@
                               (not (null ,name))))
                        ((:nonzero-number-sequence :nonzero-numseq)
                         `(and (typep ,name 'sequence) (not (null ,name))
-                              (every #'(lambda (x) (and (numberp x) (not (= 0 x))))
+                              (every (lambda (x) (and (numberp x) (not (= 0 x))))
                                      ,name)))
                        ((:probability-sequence :probseq)
                         `(and (typep ,name 'sequence) (not (null ,name))
-                              (every #'(lambda (x) (and (numberp x) (not (minusp x))
-                                                        (<= x 1.0))) ,name)))
+                              (every (lambda (x) (and (numberp x) (not (minusp x))
+                                                      (<= x 1.0))) ,name)))
                        ((:positive-integer-sequence :posintseq)
                         `(and (typep ,name 'sequence) (not (null ,name))
-                              (every #'(lambda (x) (and (typep x 'integer) (plusp
-                                                                            x)))
+                              (every (lambda (x) (and (typep x 'integer) (plusp
+                                                                          x)))
                                      ,name)))
                        (:percentage
                         `(and (numberp ,name) (plusp ,name) (<= ,name 100)))
@@ -238,7 +238,7 @@
 
 (defun geometric-mean (sequence &optional (base 10))
   (test-variables (sequence :nonzero-numseq) (base :posnum))
-  (expt base (mean (map 'list #'(lambda (x) (log x base)) sequence))))
+  (expt base (mean (map 'list (lambda (x) (log x base)) sequence))))
 
 ;; RANGE
 ;; Rosner 18
@@ -270,7 +270,7 @@
   (test-variables (sequence :numseq))
   (let ((mean (mean sequence))
         (n (length sequence)))
-    (/ (reduce #'+ (map 'list #'(lambda (x) (square (- mean x))) sequence))
+    (/ (reduce #'+ (map 'list (lambda (x) (square (- mean x))) sequence))
        (1- n))))
 
 ;; STANDARD-DEVIATION (SD)
@@ -280,16 +280,12 @@
   (test-variables (sequence :numseq))
   (let ((mean (mean sequence))
         (n (length sequence)))
-    (sqrt (/ (reduce #'+ (map 'list #'(lambda (x) (square (- mean x))) sequence))
+    (sqrt (/ (reduce #'+ (map 'list (lambda (x) (square (- mean x))) sequence))
              (1- n)))))
 
 
 (defun sd (sequence)
-  (test-variables (sequence :numseq))
-  (let ((mean (mean sequence))
-        (n (length sequence)))
-    (sqrt (/ (reduce #'+ (map 'list #'(lambda (x) (square (- mean x))) sequence))
-             (1- n)))))
+  (standard-deviation sequence))
 
 
 ;; COEFFICIENT-OF-VARIATION
@@ -460,7 +456,7 @@
   "Adopted from CLASP 1.4.3, <a href=\"http://eksl-www.cs.umass.edu/clasp.html\">http://eksl-www.cs.umass.edu/clasp.html</a>"
   (test-variables (dof :posint) (percentile :prob))
   (find-critical-value
-   #'(lambda (x) (t-significance x dof :tails :positive))
+   (lambda (x) (t-significance x dof :tails :positive))
    (- 1 percentile)))
 
 
@@ -471,7 +467,7 @@
 
 (defun chi-square (dof percentile)
   (test-variables (dof :posint) (percentile :prob))
-  (find-critical-value #'(lambda (x) (chi-square-cdf x dof))
+  (find-critical-value (lambda (x) (chi-square-cdf x dof))
                        (- 1 percentile)))
 
 ;; Chi-square-cdf computes the left hand tail area under the chi square
@@ -526,10 +522,10 @@
   (test-variables (x :posnum) (alpha :prob))
   (values
    (find-critical-value
-    #'(lambda (mu) (poisson-cumulative-probability mu (1- x)))
+    (lambda (mu) (poisson-cumulative-probability mu (1- x)))
     (- 1 (/ alpha 2)))
    (find-critical-value
-    #'(lambda (mu) (poisson-cumulative-probability mu x))
+    (lambda (mu) (poisson-cumulative-probability mu x))
     (/ alpha 2))))
 
 
@@ -937,20 +933,18 @@
          (minus-count (count #'minusp differences)))
     (sign-test plus-count minus-count :exact? exact? :tails tails)))
 
-;; WILCOXON-SIGNED-RANK-TEST
 ;; Rosner 341
-;; A test on the ranking of positive and negative differences (are the
-;; positive differences significantly larger/smaller than the negative
-;; ones). Assumes a continuous and symmetric distribution of differences,
-;; although not a normal one.  This is the normal theory approximation,
-;; which is only valid when N > 15.
-
-;; This test is completely equivalent to the Mann-Whitney test.
-
 (defun wilcoxon-signed-rank-test (differences &optional (tails :both))
+  "A test on the ranking of positive and negative differences (are the
+positive differences significantly larger/smaller than the negative
+ones). Assumes a continuous and symmetric distribution of differences,
+although not a normal one.  This is the normal theory approximation,
+which is only valid when N > 15.
+
+This test is completely equivalent to the Mann-Whitney test."
   (let* ((nonzero-differences (remove 0 differences :test #'=))
-         (sorted-list (sort (mapcar #'(lambda (dif)
-                                        (list (abs dif) (sign dif)))
+         (sorted-list (sort (mapcar (lambda (dif)
+                                      (list (abs dif) (sign dif)))
                                     nonzero-differences)
                             #'<
                             :key #'first))
@@ -977,16 +971,16 @@
                 (nconc (nth (+ first i) sorted-list) (list avg-rank)))))))
     (setq ties (nreverse ties))
     (let* ((direction (if (eq tails :negative) -1 1))
-           (r1 (reduce #'+ (mapcar #'(lambda (entry)
-                                       (if (= (second entry) direction)
-                                           (third entry)
-                                           0))
+           (r1 (reduce #'+ (mapcar (lambda (entry)
+                                     (if (= (second entry) direction)
+                                         (third entry)
+                                         0))
                                    sorted-list)))
            (n (length nonzero-differences))
            (expected-r1 (/ (* n (1+ n)) 4))
            (ties-factor (if ties
-                            (/ (reduce #'+ (mapcar #'(lambda (ti)
-                                                       (- (* ti ti ti) ti))
+                            (/ (reduce #'+ (mapcar (lambda (ti)
+                                                     (- (* ti ti ti) ti))
                                                    ties))
                                48)
                             0))
@@ -1277,11 +1271,11 @@
     (test-variables (xs :numseq) (ys :numseq))
     (let ((x-bar (mean xs))
           (y-bar (mean ys)))
-      (/ (reduce #'+ (mapcar #'(lambda (xi yi) (* (- xi x-bar) (- yi y-bar)))
+      (/ (reduce #'+ (mapcar (lambda (xi yi) (* (- xi x-bar) (- yi y-bar)))
                              xs ys))
-         (sqrt (* (reduce #'+ (mapcar #'(lambda (xi) (square (- xi x-bar)))
+         (sqrt (* (reduce #'+ (mapcar (lambda (xi) (square (- xi x-bar)))
                                       xs))
-                  (reduce #'+ (mapcar #'(lambda (yi) (square (- yi y-bar)))
+                  (reduce #'+ (mapcar (lambda (yi) (square (- yi y-bar)))
                                       ys))))))))
 
 ;; CORRELATION-TEST-TWO-SAMPLE
@@ -1443,8 +1437,8 @@ function in section 13.4."
          (bins (make-array n :initial-element 0)))
     (dotimes (bin n bins)
       (setf (aref bins bin)
-            (count-if #'(lambda (x) (and (>= x (+ min (* bin increment)))
-                                         (< x (+ min (* (1+ bin) increment)))))
+            (count-if (lambda (x) (and (>= x (+ min (* bin increment)))
+                                       (< x (+ min (* (1+ bin) increment)))))
                       sequence)))))
 
 ;; FISHER-Z-TRANSFORM
@@ -1811,7 +1805,7 @@ Instead, it just returns 0.0d0"
    digits, but the only thing you can do with it is print it.  It's
    just a convenience hack for rounding recursive lists."
   (if (listp v)
-      (mapcar #'(lambda (v) (pround n v)) v)
+      (mapcar (lambda (v) (pround n v)) v)
       (if (numberp v)
           (format nil (format nil "~~,~af" n) v)
           v)))
@@ -1886,7 +1880,7 @@ Instead, it just returns 0.0d0"
     ))
 
 (defun s2 (l n)
-  (/ (- (sum (mapcar #'(lambda (a) (* a a)) l))
+  (/ (- (sum (mapcar (lambda (a) (* a a)) l))
 	(/ (let ((r (sum l))) (* r r)) n))
      (1- n)))
 
@@ -1982,8 +1976,7 @@ Instead, it just returns 0.0d0"
       (sqrt
        (let ((m (mean l)))
          (* (/ 1.0 (1- (length l)))
-            (sum (mapcar #'(lambda (x) (expt (- x m) 2)) l))
-            )))))
+            (sum (mapcar (lambda (x) (expt (- x m) 2)) l)))))))
 
 #+superseded ; LH's version is better?
 (defun standard-error (l)
@@ -2000,9 +1993,7 @@ Instead, it just returns 0.0d0"
 	(incf (nth k sums) (nth k l))
 	))
     (setq n (float n))
-    (mapcar #'(lambda (v) (/ v n)) sums)
-    )
-  )
+    (mapcar (lambda (v) (/ v n)) sums)))
 
 (defun anova2 (a1b1 a1b2 a2b1 a2b2)
   "Two-Way Anova.  (From Misanin & Hinderliter, 1991, p. 367-) This
@@ -2133,12 +2124,12 @@ Total    83.75  19
 	 (t1 (sum tsr1))
 	 (t1c (let (temp)
 		(dotimes (n c temp)
-                  (push (sum (mapcar #'(lambda (s) (nth n s)) g1)) temp))))
+                  (push (sum (mapcar (lambda (s) (nth n s)) g1)) temp))))
 	 (tsr2 (mapcar #'sum g2))
 	 (t2 (sum tsr2))
 	 (t2c (let (temp)
 		(dotimes (n c temp)
-                  (push (sum (mapcar #'(lambda (s) (nth n s)) g2)) temp))))
+                  (push (sum (mapcar (lambda (s) (nth n s)) g2)) temp))))
 	 (tc (mapcar #'+ t1c t2c))
 	 (total (+ t1 t2))
 	 (n (length g1))
@@ -2210,13 +2201,13 @@ Total    83.75  19
 	 (Y-- (sum Yi-))
 	 (meanY-- (mean meanYi-))
 	 (ntotal (sum ni))
-	 (SSTO (sum (mapcar #'(lambda (treatment) 
-				(sum (mapcar #'(lambda (Oij) 
-						 (expt (- Oij meanY--) 2)) treatment))) d)))
-	 (SSE (sum (mapcar #'(lambda (treatment meanYi-) 
-			       (sum (mapcar #'(lambda (Oij) 
-						(expt (- Oij meanYi-) 2)) treatment))) d meanYi-)))
-	 (SSTR (sum (mapcar #'(lambda (meanYi- ni) (* ni (expt (- meanYi- meanY--) 2))) meanYi- ni)))
+	 (SSTO (sum (mapcar (lambda (treatment)
+                              (sum (mapcar (lambda (Oij)
+                                             (expt (- Oij meanY--) 2)) treatment))) d)))
+	 (SSE (sum (mapcar (lambda (treatment meanYi-)
+                             (sum (mapcar (lambda (Oij)
+                                            (expt (- Oij meanYi-) 2)) treatment))) d meanYi-)))
+	 (SSTR (sum (mapcar (lambda (meanYi- ni) (* ni (expt (- meanYi- meanY--) 2))) meanYi- ni)))
 	 (SSTRdf (- r 1))
 	 (SSEdf (- ntotal r))
 	 (SSTOdf (- ntotal 1))
@@ -2410,7 +2401,7 @@ Total    83.75  19
 	 (b (+ (/ (* (- m) sumx) n)
 	       (/ sumy n)))
 	 (sumy2 (sum (mapcar #'* y y)))
-	 (resids (mapcar #'(lambda (x y) (- y (+ (* x m) b))) x y))
+	 (resids (mapcar (lambda (x y) (- y (+ (* x m) b))) x y))
 	 (r (/ (- (* n sumxy) (* sumx sumy))
 	       (sqrt (* 
 		      (- (* n sumx2) (expt (sum x) 2))
@@ -2428,8 +2419,8 @@ Total    83.75  19
   (let* ((mx (mean x))
          (my (mean y))
 	 (n (length x))
-         (devx (mapcar #'(lambda (v) (- v mx)) x))
-         (devy (mapcar #'(lambda (v) (- v my)) y))
+         (devx (mapcar (lambda (v) (- v mx)) x))
+         (devy (mapcar (lambda (v) (- v my)) y))
 	 (sumdevxy (sum (mapcar #'* devx devy)))
 	 (sumsqdevx (sum (sqr devx)))
 	 (sumsqdevy (sum (sqr devy)))
@@ -2535,16 +2526,14 @@ Total    83.75  19
    just return a long list of 0.5 if so!"
   (let* ((mx (reduce #'max v))
 	 (mn (reduce #'min v))
-	 (range (float (- mx mn)))
-	 )
-    (mapcar #'(lambda (i) (if (zerop range) 0.5
-			      (/ (- i mn) range))) v)
-    ))
+	 (range (float (- mx mn))))
+    (mapcar (lambda (i) (if (zerop range) 0.5
+                            (/ (- i mn) range))) v)))
 
 (defun dumplot (v &optional show-values)
   "A dumb terminal way of plotting data."
   (let* ((d1 (normalize v))
-	 (d2 (mapcar #'(lambda (i) (* 50.0 i)) d1))
+	 (d2 (mapcar (lambda (i) (* 50.0 i)) d1))
 	 (min (reduce #'min v))
 	 (max (reduce #'max v))
 	 )
@@ -2621,7 +2610,7 @@ Total    83.75  19
 ;;; since, like a moron I didn't give an example....
 
 (defun chi-square-2 (table)
-  (let* ((row-mars (mapcar #'(lambda (row) (apply #'+ row)) table))
+  (let* ((row-mars (mapcar (lambda (row) (apply #'+ row)) table))
 	 (col-mars (loop for col from 0 to (1- (length (car table)))
                       collect (apply #'+ (loop for row in table
                                             collect (nth col row)))))
@@ -2877,7 +2866,7 @@ Total    83.75  19
 	(incf n)))
     ;; 3. Rank these distances, paying no attention to whether the values are
     ;;    higher or lower than the hypothetical value.
-    (setq r/v/d* (sort r/v/d* #'(lambda (a b) (< (third a) (third b)))))
+    (setq r/v/d* (sort r/v/d* (lambda (a b) (< (third a) (third b)))))
     ;; Ranking doesn't deal with ties!!!
     (loop for entry in r/v/d*
        as rank from 1 by 1
@@ -2916,10 +2905,9 @@ Total    83.75  19
    This is done in two passes.  First we sort and assign sequential integers.  Then
    we re-assign ties."
   (let* ((v/r* (loop for v in v* collect (cons v 'rank)))
-	 (v/r* (sort v/r* #'(lambda (a b) (< (car a) (car b)))))
-	 (ignore (loop for v/r in v/r* as rank from 1 by 1 
-                    do (setf (cdr v/r) rank)))
-	 )
+	 (v/r* (sort v/r* (lambda (a b) (< (car a) (car b)))))
+	 (ignore (loop for v/r in v/r* as rank from 1 by 1
+                    do (setf (cdr v/r) rank))))
 
     (loop for v/r+ on v/r*
        as major-rank from 1 by 1
