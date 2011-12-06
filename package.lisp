@@ -1,6 +1,7 @@
 ;;;; package.lisp
 
 (defpackage :statistics
+  (:documentation "Statistical functions")
   (:nicknames :stats)
   (:use #:cl)
   (:export #:mean #:median #:mode #:geometric-mean #:range #:percentile
@@ -14,7 +15,7 @@
            #:binomial-probability-ci #:poisson-mu-ci #:normal-mean-ci
            #:normal-mean-ci-on-sequence #:normal-variance-ci
            #:normal-variance-ci-on-sequence #:normal-sd-ci
-           #:normal-sd-ci-on-sequence #:z-test #:z-test-on-sequence 
+           #:normal-sd-ci-on-sequence #:z-test #:z-test-on-sequence
            #:t-test-one-sample #:t-test-one-sample-on-sequence
            #:t-test-paired #:t-test-paired-on-sequences #:t-test-two-sample
            #:t-test-two-sample-on-sequences #:chi-square-test-one-sample

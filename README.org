@@ -13,6 +13,9 @@ augmented by Jeff Shrager, partly from his own stats libraries, and
 partly from open source stuff borrowed from around the web.  Citations
 and acknowledgements are given where possible.
 
+Patches welcome (preferably via pull requests at
+https://github.com/mrc/lhstats)
+
 * Larry Hunter's Code
 
 Statistical functions in Common Lisp.  Version 1.01 July 27, 2001
